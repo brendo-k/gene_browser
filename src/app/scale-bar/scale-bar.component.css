@@ -1,0 +1,32 @@
+.bounding-box {
+  position:absolute;
+  bottom: 0;
+  background: rgb(0, 0, 0);
+  background: rgba(0, 0, 0, 0.5); /* Black see-through */
+  color: #f1f1f1;
+  text-align: center;
+  height: 40px;
+  border-radius: 10px;
+  pointer-events: none;
+
+}
+
+.chromosome {
+  margin: auto;
+  display: block;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+.chromosome-container {
+  height: 40px;
+  display:flex;
+  align-items: center;
+  position:relative;
+  justify-content: center;
+}
+
+

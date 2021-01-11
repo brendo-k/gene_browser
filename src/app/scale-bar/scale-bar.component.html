@@ -1,0 +1,6 @@
+<div class="chromosome-container" (mousedown)="mouse_down($event)">
+  <div [ngStyle]="{'width.px': width, 'left.px': left}" class="bounding-box"></div>
+  <img class="chromosome" src="../../assets/chromosome1.png" #chromosome
+                            (load)="onLoad()" draggable="false">
+</div>
+

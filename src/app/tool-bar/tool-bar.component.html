@@ -1,0 +1,43 @@
+<nav class="navbar navbar-expand-lg bg-primary d-flex navbar-dark mt-sm-3">
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collape navbar-collapse d-flex justify-content-around" id="navbarNavDropdown">
+
+    <form class="form-inline">
+      <label class="form-control-label mr-sm-2">Zoom:</label>
+      <input class="form-control" type="number" placeholder="1" aria-label="1"
+                                              max="100" min="0">
+    </form>
+
+    <div class="d-flex slider">
+      <a (click)="changeZoom(-1)" role="button">
+        <i class="fas fa-search-plus mr-2 fa-lg"> </i>
+      </a>
+      <form class="form-inline flex-grow-1">
+        <input type="range" class="custom-range scroll-bar form-control-range"
+                            name="zoom" id="customRange1" min=0 max=10 (change)="setZoom()"
+                            [(ngModel)]="zoom">
+      </form>
+      <a (click)="changeZoom(1)" role="button">
+        <i class="fas fa-search-minus ml-2 fa-lg"> </i>
+       </a>
+    </div>
+
+    <form class="form-inline">
+      <label class="form-control-label mr-sm-2">Position:</label>
+      <input class="form-control" type="number" min="1" max="1000000000"
+                                                        name='start' [(ngModel)]="start">
+      <h3 class="form-control-label mx-sm-2" style="color:white">-</h3>
+      <input class="form-control" type="number" min="1" max="1000000000"
+                                                name="end" [(ngModel)]="end">
+      <a (click)="saveInput()" role="button">
+        <i class="fas fa-search ml-sm-2"></i>
+      </a>
+    </form> 
+  </div>
+
+</nav>
+
