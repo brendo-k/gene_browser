@@ -16,20 +16,51 @@ try{
     const db = db_client.db("genome");
     const gene_collection = db.collection("gene");
     const dna_collection = db.collection("dna");
+    const mRNA_collection = db.collection('mrna');
+    const exon_collection = db.collection('exon');
 
+    //HTTP request handler for getting genes in range
     app.get('/api/gene', (req, res) => {
-      console.log('request recieved');
       let start = parseInt(req.query.start);
       let end = parseInt(req.query.end);
       let chromosome = req.query.chromosome;
-      if (start == null || end == null){
-        throw new Error('query parameters broken');
+      if (start == null || end == null || chromosome == null){
+
+        throw new Error(`Query parameters broken: ${start} ${end} ${chromosome}`);
+      }
+      console.log(`${start} ${end} ${chromosome}`);
+
+      //mongoDB query on gene collection 
+      let cursor = gene_collection.find({start: {$lt: end}, end: {$gt: start}, chromosome_num: chromosome});
+      //convert cursor to array and send as http response
+      cursor.toArray().then((value) => res.send(value));
+    });
+
+    //HTTP request for getting gene transcripts from gene id
+    app.get('/api/mRNA', (req, res) => {
+      let gene = req.query.gene;
+      console.log(`request recived mRNA: ${gene}`);
+      if (gene == null){
+        throw new Error(`Query parameters broken from mRNA: ${gene}`);
       }
 
-      let cursor = gene_collection.find({start: {$lt: end}, end: {$gt: start}, chromosome_num: chromosome});
+      //mongoDB query on gene collection 
+      let cursor = mRNA_collection.find({gene: gene});
+      //convert cursor to array and send as http response
       cursor.toArray().then((value) => res.send(value));
+    });
 
+    //HTTP request for getting gene transcripts from gene id
+    app.get('/api/exon', (req, res) => {
+      let mRNA = req.query.mRNA;
+      if (mRNA == null){
+        throw new Error(`Query parameters broken from exon: ${mRNA}`);
+      }
 
+      //mongoDB query on gene collection 
+      let cursor = exon_collection.find({mrna: mRNA});
+      //convert cursor to array and send as http response
+      cursor.toArray().then((value) => res.send(value));
     });
 
     var server = app.listen(8080, () => {

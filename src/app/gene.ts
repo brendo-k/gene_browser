@@ -4,6 +4,7 @@ import { Bb } from './bb';
 
 
 export interface Gene {
+  _id: string;
   chromosome_num: string;
   source: string;
   gene_name: string;

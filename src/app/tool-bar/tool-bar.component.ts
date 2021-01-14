@@ -47,7 +47,7 @@ export class ToolBarComponent implements OnInit {
 
   setZoom(): void {
     console.log("zoom set " + this.zoom);
-    this.browserState.set_zoom(this.zoom);
+    this.browserState.set_zoom(this.zoom, false);
   }
 
 
@@ -57,7 +57,7 @@ export class ToolBarComponent implements OnInit {
       start: this.start,
       end: this.end,
     }
-    this.browserState.set_coord(this.start, this.end);
+    this.browserState.set_coord(this.start, this.end, false);
   }
 
 }

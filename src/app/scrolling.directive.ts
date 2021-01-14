@@ -33,12 +33,12 @@ export class ScrollingDirective implements OnInit {
         this.prev_x = event.x;
         if(start < 1){
           let diff = coord.start - 1
-          this.browser_state.set_coord(1, coord.end-diff);
+          this.browser_state.set_coord(1, coord.end-diff, false);
         }else if (end > this.browser_state.genome_size){
           let diff = this.browser_state.genome_size - coord.end;
-          this.browser_state.set_coord(coord.start + diff, this.browser_state.genome_size);
+          this.browser_state.set_coord(coord.start + diff, this.browser_state.genome_size, false);
         }else if (start >= 1 && end <= this.browser_state.genome_size){
-          this.browser_state.set_coord(start, end);
+          this.browser_state.set_coord(start, end, false);
         }
       }
     }

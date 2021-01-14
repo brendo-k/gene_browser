@@ -78,7 +78,7 @@ export class ScaleBarComponent implements OnInit {
       let px_to_bp = this.browserState.genome_size/this.img_width;
       let start_bp = Math.floor(start * px_to_bp);
       let end_bp = Math.floor(end * px_to_bp);
-      this.browserState.set_coord(start_bp, end_bp);
+      this.browserState.set_coord(start_bp, end_bp, false);
     }
   };
 
@@ -120,6 +120,9 @@ export class ScaleBarComponent implements OnInit {
     let range = this.end - this.start + 1;
     let bp_to_px = this.img_width/this.browserState.genome_size;
     this.width = range * bp_to_px;
+    if(this.width < 1){
+      this.width = 1;
+    }
 
     let start_begin = this.start * bp_to_px;
     this.left = start_begin + this.padding_left;

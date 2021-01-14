@@ -19,6 +19,7 @@ export class BrowserComponent implements OnInit {
   coord: Coord;
   cvs: HTMLCanvasElement;
   width: number;
+  is_labeled: boolean;
 
   @ViewChild('canvas_container')canvas_container_element: ElementRef;
 
@@ -33,32 +34,29 @@ export class BrowserComponent implements OnInit {
   ngOnInit(): void {
     this.width = window.innerWidth*3/4;
 
+
+    //toggle gene labels
+    this.is_labeled = this.set_label(this.browserState.get_zoom());
+
+    //subscribe to coord changes
     this.browserState.coord$.subscribe((coord) => {
       this.coord = coord;
-
-      this.genomeService.get_genes(coord.start, coord.end, "1")
-        .pipe(
-          catchError( () => {
-            console.log('reached');
-            return of(this.genomeService.get_temp_genes())
-          })
-        )
-        .pipe(
-          map((gene: any[]) => {
-            gene.map((val) => val.bb = null);
-            return gene;
-          })
-        )
-        .subscribe(
-          (genes) => {
-            this.genes = genes;
-            console.log(genes);
-          });
+      this.get_genes(coord.start, coord.end);
     })
+
+    //toggle lables on zoom change
+    this.browserState.zoom$.subscribe((zoom: number) => {
+      this.is_labeled = this.set_label(zoom);
+    });
     
     this.coord = this.browserState.get_coord();
-    console.log(this.genomeService);
-    this.genomeService.get_genes(this.coord.start, this.coord.end, "1")
+    //set genes now
+    this.get_genes(this.coord.start, this.coord.end);
+  }
+
+  //create an observable for querying genes from server
+  get_genes(start: number, end: number): void{
+    this.genomeService.get_genes(start, end, "1")
       .pipe(
         catchError( () => of(this.genomeService.get_temp_genes()))
       )
@@ -70,12 +68,22 @@ export class BrowserComponent implements OnInit {
       )
       .subscribe(
         (genes) => {
+          //set genes on callback
           this.genes = genes;
           console.log(genes);
         });
+
   }
 
   ngAfterViewInit(): void {
+  }
+
+  set_label(zoom: number): boolean {
+    if (zoom < 5){
+      return true
+    }else {
+      return false
+    }
   }
 
 }

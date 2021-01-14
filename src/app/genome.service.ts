@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Gene } from './gene';
 import { Observable } from 'rxjs'
 import { Strand } from './strand.enum';
@@ -14,15 +14,23 @@ export class GenomeService {
   constructor(private http: HttpClient) { 
   }
 
+  //make http request to server to get genes in range
   get_genes(start: number, end: number, chromosome: string): Observable<Object>{
-    let param = new HttpParams()
-    param.append('start', start.toString())
-    param.append('end', end.toString())
-    param.append('chromosome', chromosome.toString())
     return this.http.get('api/gene', {params:{start: start.toString(),
                                               end: end.toString(), 
-                                              chromosome: chromosome.toString()}})
+                                              chromosome: chromosome.toString()}});
   }
+
+  //make http request to server for mRNA with a gene id 
+  get_mRNA(gene: string){
+    return this.http.get('api/mRNA', {params:{gene: gene}});
+  }
+
+  get_exon(mRNA: string){
+    return this.http.get('api/mRNA', {params:{mRNA: mRNA}});
+  }
+
+
 
   //chromosome_num: string;
   //source: string;
@@ -35,6 +43,7 @@ export class GenomeService {
   get_temp_genes(): Gene[] {
     return [
       {
+        _id: "1",
         chromosome_num: "1",
         source: "test",
         gene_name: "gene_1",
@@ -45,6 +54,7 @@ export class GenomeService {
         bb: null,
       },
       {
+        _id: "2",
         chromosome_num: "1",
         source: "test",
         gene_name: "gene_1",
@@ -55,6 +65,7 @@ export class GenomeService {
         bb: null,
       },
       {
+        _id: "3",
         chromosome_num: "1",
         source: "test",
         gene_name: "gene_1",

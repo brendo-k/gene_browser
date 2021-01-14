@@ -12,29 +12,35 @@ export class BrowserStateService {
   coord: Coord;
   coord$: Subject<Coord>;
   genome_size: number;
+  zoom_split: number;
 
   constructor() { 
 
     this.zoom$ = new Subject<number>();
     this.coord$ = new Subject<Coord>();
+
+    //called when zoom is changed
     this.zoom$.subscribe((value) => {
+
       this.zoom = value;
     })
+
     this.coord$.subscribe((value) => {
       this.coord = value;
     })
-    this.set_zoom(0);
     this.coord = {
       start: 1,
       end: 228798,
     }
+    this.set_zoom(0, false);
 
     //TODO: Load the genome size from server depending on chromosome
     this.genome_size = 156040895;
-    
+    this.zoom_split = this.genome_size/10;
+
   }
 
-  set_coord(start: number, end: number){
+  set_coord(start: number, end: number, from_zoom: boolean){
     if (start < 1){
       start = 1;
     }
@@ -46,6 +52,10 @@ export class BrowserStateService {
       end: end,
     }
     this.coord = coord
+    let new_zoom = this.get_zoom_from_range(coord.end - coord.start);
+    if(!from_zoom){
+      this.set_zoom(new_zoom, true);
+    }
     this.coord$.next(coord);
   }
 
@@ -54,21 +64,74 @@ export class BrowserStateService {
   }
 
   change_zoom(change:number){
+    //change zoom from buttons
     let new_zoom = this.zoom + change;
     if (new_zoom <= 10 && new_zoom >= 0){
-      this.zoom = new_zoom;
-      this.zoom$.next(new_zoom);
+      this.set_zoom(new_zoom, false);
     }
   }
   
-  set_zoom(zoom:number){
-    if (zoom <= 10 && zoom >= 0){
+  set_zoom(zoom:number, from_coord: Boolean){
+
+    //check if zoom is valid and correct to valid if not
+    if (zoom > 10){
+      this.zoom = 10;
+    }else if (zoom < 0){
+      this.zoom = 0;
+    }else if (zoom <= 10 && zoom >= 0){
       this.zoom = zoom;
-      this.zoom$.next(zoom);
     }
+
+    //number of bp shown in new zoom range
+    let zoom_bp;
+    if(this.zoom <= 5){
+      //first 5 increase exponentially
+      zoom_bp = 200 * Math.pow(10, this.zoom);
+    } else if(this.zoom <= 7){
+      //increase linerally by 2 after
+      zoom_bp = 200 * Math.pow(10, 5) * 2 * (2 - (7 - this.zoom));
+    }else {
+      //increase by zoom_split factor after
+      zoom_bp = this.zoom * this.zoom_split;
+    }
+    //get the difference between cur start and end bp coordinates
+    let {start, end} = this.coord 
+    let bp_diff = end - start;
+
+    //number of bp to add or remove to get to zoom level
+    let bp_change = zoom_bp - bp_diff;
+    bp_change = Math.ceil(bp_change/2);
+    start -= bp_change;
+    end += bp_change;
+    
+    if(this.zoom == 10){
+      start = 1;
+      end = this.genome_size;
+    }
+
+    if(!from_coord){
+      this.set_coord(start, end, true);
+    }
+
+    //let observers know of change
+    this.zoom$.next(zoom);
   }
 
   get_zoom(){
     return this.zoom;
+  }
+
+  get_zoom_from_range(range: number){
+
+    if (range <= 200){
+      return 0;
+    } else if (Math.log10(range/200) <= 5) {
+      return Math.ceil(Math.log10(range/200));
+    } else if (range/(200 * Math.pow(10, 5) * 2) - 5 <= 7){
+      console.log(range/(200 * Math.pow(10, 5) * 2) - 5);
+      return Math.ceil(range/(200 * Math.pow(10, 5) * 2) + 5);
+    }else{
+      return Math.ceil(range/this.zoom_split)
+    }
   }
 }
