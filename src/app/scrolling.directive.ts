@@ -16,7 +16,6 @@ export class ScrollingDirective implements OnInit {
   @HostListener('mousedown', ['$event'])
   onClick(event: MouseEvent){
     this.prev_x = event.x; 
-    console.log(`gene: mouse down: ${this.prev_x}`);
     this.mouse_down = true;
   }
 
@@ -28,8 +27,8 @@ export class ScrollingDirective implements OnInit {
         let bp_px = this.range/this.width;
         let coord: Coord = this.browser_state.get_coord();
         let {start, end} = coord
-        end += Math.floor(bp_px * diff)
-        start += Math.floor(bp_px * diff)
+        end += Math.ceil(bp_px * diff)
+        start += Math.ceil(bp_px * diff)
         this.prev_x = event.x;
         if(start < 1){
           let diff = coord.start - 1

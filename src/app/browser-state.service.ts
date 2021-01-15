@@ -126,10 +126,10 @@ export class BrowserStateService {
     if (range <= 200){
       return 0;
     } else if (Math.log10(range/200) <= 5) {
-      return Math.ceil(Math.log10(range/200));
+      return Math.floor(Math.log10(range/200));
     } else if (range/(200 * Math.pow(10, 5) * 2) - 5 <= 7){
       console.log(range/(200 * Math.pow(10, 5) * 2) - 5);
-      return Math.ceil(range/(200 * Math.pow(10, 5) * 2) + 5);
+      return Math.floor(range/(200 * Math.pow(10, 5) * 2) + 5);
     }else{
       return Math.ceil(range/this.zoom_split)
     }
