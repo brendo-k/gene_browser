@@ -1,14 +1,8 @@
-import { Strand } from './strand.enum';
-export interface Exon {
-  _id : string;
-	chromosome_num : string;
-	source : string;
-	start : number;
-	end : number;
+import { Bb } from './bb';
+import { DNA } from './dna';
+
+export interface Exon extends DNA {
   exon_name: string;
-	score : string;
-	strand : Strand;
-	phase : string;
-	attributes : string[];
 	mrna : string;
+  bb: Bb;
 }

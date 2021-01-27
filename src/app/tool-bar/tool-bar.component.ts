@@ -24,13 +24,13 @@ export class ToolBarComponent implements OnInit {
 
 
     this._zoom = browserState.zoom$.subscribe((value) => {
-      console.log(`recieved zoom ${value}`);
+      //console.log(`recieved zoom ${value}`);
       this.zoom = value;
       this.start = this.coord.start;
       this.end = this.coord.end;
     });
     this._coord = browserState.coord$.subscribe((value) => {
-      console.log(`recieved coord ${value}`);
+      //console.log(`recieved coord ${value}`);
       this.coord = value;
       this.start = this.coord.start;
       this.end = this.coord.end;
@@ -41,18 +41,18 @@ export class ToolBarComponent implements OnInit {
   }
 
   changeZoom(change:number = 0): void {
-    console.log("zoom_change " + change);
+    //console.log("zoom_change " + change);
     this.browserState.change_zoom(change);
   }
 
   setZoom(): void {
-    console.log("zoom set " + this.zoom);
+    //console.log("zoom set " + this.zoom);
     this.browserState.set_zoom(this.zoom, false);
   }
 
 
   saveInput(): void {
-    console.log(`Input saved ${this.coord}`); 
+    //console.log(`Input saved ${this.coord}`); 
     this.coord = {
       start: this.start,
       end: this.end,

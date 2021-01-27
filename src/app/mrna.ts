@@ -1,14 +1,7 @@
-import { Strand } from './strand.enum';
+import { Exon } from './exon';
+import { DNA } from './dna';
 
-export interface Mrna {
-  _id : string;
-	chromosome_num : string;
-	source : string;
-	start : number;
-	end : number;
-	score : string;
-	strand : Strand;
-	phase : string;
-	attributes : string[];
+export interface Mrna extends DNA{
 	gene : string;
+  exon: Exon[];
 }

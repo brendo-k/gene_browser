@@ -1,6 +1,5 @@
 .bounding-box {
   position:absolute;
-  bottom: 0;
   background: rgb(0, 0, 0);
   background: rgba(0, 0, 0, 0.5); /* Black see-through */
   color: #f1f1f1;
@@ -12,7 +11,6 @@
 }
 
 .chromosome {
-  margin: auto;
   display: block;
   -webkit-user-select: none;
   -khtml-user-select: none;

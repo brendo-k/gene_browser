@@ -29,10 +29,10 @@ export class ScaleBarComponent implements OnInit {
   @HostListener('document:mousemove', ['$event'])
   onMove(event: MouseEvent){
       if(this.is_mouse_down){
-          console.log('mouse_move');
+          //console.log('mouse_move');
 
           //if the mouse is moving inside the bounds of the image
-          if(event.x >= this.padding_left && event.x <= this.img_width + this.padding_left){
+          if(this.check_inside(event.x)){
 
             if (event.x < this.left) {
               this.is_left = true;
@@ -60,47 +60,50 @@ export class ScaleBarComponent implements OnInit {
             //if the mouse if moving right or left from right side
           } else if (event.x < this.padding_left) {
             this.left = this.padding_left;
-          } else {
-            if(this.width == 0){
+          } else if(this.width == 0){
               this.left = this.padding_left + this.img_width;
-            }
           }
       }
   };
   
   @HostListener('document:mouseup', ['$event'])
   mouseUp(event: MouseEvent){
-    if(this.is_mouse_down){
-      this.is_mouse_down = false;
+    if(this.is_mouse_down && this.check_inside(this.left)){
+
 
       let start = this.left - this.padding_left;
       let end = start + this.width + 1;
       let px_to_bp = this.browserState.genome_size/this.img_width;
+
       let start_bp = Math.floor(start * px_to_bp);
       let end_bp = Math.floor(end * px_to_bp);
+      console.log(start_bp, end_bp);
       this.browserState.set_coord(start_bp, end_bp, false);
     }
+    this.is_mouse_down = false;
   };
 
   constructor(private browserState: BrowserStateService) { 
     //set starting values
-    this.start = browserState.coord.start;
-    this.end = browserState.coord.end;
     this.width = 20;
     this.is_mouse_down = false;
     this.is_left = false;
 
     
     //create listeners
-    browserState.coord$.subscribe((value) =>{
-      this.start = browserState.coord.start;
-      this.end = browserState.coord.end;
-      this.update_bounding_box();
-    });
   }
 
 
   ngOnInit(): void {
+
+    this.start = this.browserState.coord.start;
+    this.end = this.browserState.coord.end;
+
+    this.browserState.coord$.subscribe((value) =>{
+      this.start = this.browserState.coord.start;
+      this.end = this.browserState.coord.end;
+      this.update_bounding_box();
+    });
   }
 
   //callback when image loads
@@ -110,13 +113,15 @@ export class ScaleBarComponent implements OnInit {
     image_html.ondragstart = () => false;
     this.img_width = image_html.width;
     this.update_bounding_box();
+    this.padding_left = image_html.offsetLeft;
   }
 
   update_bounding_box(): void {
-    console.log(`updating bounding box`);
-    let padding_pixels = window.getComputedStyle(this.chromosome.nativeElement).marginLeft;
+    //console.log(`updating bounding box`);
+    let image_html = (this.chromosome.nativeElement as HTMLImageElement)
+    console.log(this.start, this.end);
 
-    this.padding_left = parseInt(padding_pixels.substring(0, padding_pixels.length - 2));
+    this.padding_left = image_html.offsetLeft;
     let range = this.end - this.start + 1;
     let bp_to_px = this.img_width/this.browserState.genome_size;
     this.width = range * bp_to_px;
@@ -130,9 +135,25 @@ export class ScaleBarComponent implements OnInit {
   }
 
   mouse_down(event: MouseEvent): void {
-      console.log("mouse click");
+      //console.log("mouse click");
       this.left = event.x;
       this.width = 0;
       this.is_mouse_down = true;
+  }
+
+  check_inside(pos: number): boolean{
+    return (pos >= this.padding_left && pos <= this.img_width + this.padding_left)
+  }
+
+  move_browser(amount: number){
+    let bp_range = this.end - this.start + 1;
+    let range = bp_range * amount;
+    if(this.start+range < 0){
+      this.browserState.set_coord(1, bp_range, false);
+    }else if(this.start + range > this.browserState.genome_size){
+      this.browserState.set_coord(this.browserState.genome_size - bp_range, this.browserState.genome_size, false);
+    }else{
+      this.browserState.set_coord(this.start + range, this.end + range, false);
+    }
   }
 }

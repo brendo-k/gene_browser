@@ -1,4 +1,4 @@
-import { Directive, HostListener, OnInit, Input } from '@angular/core';
+import { Directive, HostListener, OnInit, Input, ElementRef } from '@angular/core';
 import { BrowserStateService } from './browser-state.service';
 import { Coord } from './coord';
 
@@ -11,7 +11,7 @@ export class ScrollingDirective implements OnInit {
   prev_x: number;
   range: number;
 
-  @Input() width: number;
+  @Input('appScrolling') width: number;
 
   @HostListener('mousedown', ['$event'])
   onClick(event: MouseEvent){
@@ -21,6 +21,14 @@ export class ScrollingDirective implements OnInit {
 
   @HostListener('mousemove', ['$event'])
   onMove(event: MouseEvent){
+
+    if(this.mouse_down){
+      //TODO: gene annimations during mouse down
+    }
+  }
+
+  @HostListener('document:mouseup', ['$event'])
+  onUp(event: MouseEvent) {
     if(this.mouse_down){
       let diff = this.prev_x - event.x;
       if(diff != 0){
@@ -41,18 +49,15 @@ export class ScrollingDirective implements OnInit {
         }
       }
     }
-  }
-
-  @HostListener('document:mouseup', ['$event'])
-  onUp(event: MouseEvent) {
     this.mouse_down = false;
   }
 
-  constructor(private browser_state: BrowserStateService) { }
+  constructor(private browser_state: BrowserStateService, el: ElementRef) { }
 
   ngOnInit(): void {
     let coord: Coord = this.browser_state.get_coord();
     this.range = coord.end - coord.start;
+    console.log(this.width);
     this.browser_state.coord$.subscribe((coord: Coord) => {
       this.range = coord.end - coord.start;
     });

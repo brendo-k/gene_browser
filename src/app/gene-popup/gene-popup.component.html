@@ -1,3 +1,5 @@
-<div *NgIf="gene">
-	{{gene}}
+<div [style.top.px]="top" [style.left.px]="left" *ngIf="gene" class="gene_description">
+  <div [style.left.px]="arrow_left" class="arrow">
+  </div>
+  <span class="gene_text">{{gene.gene_name}}</span>
 </div>

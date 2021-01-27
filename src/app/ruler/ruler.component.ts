@@ -25,7 +25,7 @@ export class RulerComponent implements OnInit {
 
   ngOnChanges(): void{
     if (typeof this.cvs != 'undefined') {
-      console.log(this.coord);
+      //console.log(this.coord);
       this.set_size();
       this.draw_scale();
     }

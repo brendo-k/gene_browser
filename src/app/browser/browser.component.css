@@ -1,0 +1,9 @@
+.black-border{
+  outline: 1px #000 solid;
+}
+
+.overflow{
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+

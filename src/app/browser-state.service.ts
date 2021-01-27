@@ -32,7 +32,7 @@ export class BrowserStateService {
       start: 1,
       end: 228798,
     }
-    this.set_zoom(0, false);
+    this.set_zoom(3, false);
 
     //TODO: Load the genome size from server depending on chromosome
     this.genome_size = 156040895;
@@ -128,7 +128,7 @@ export class BrowserStateService {
     } else if (Math.log10(range/200) <= 5) {
       return Math.floor(Math.log10(range/200));
     } else if (range/(200 * Math.pow(10, 5) * 2) - 5 <= 7){
-      console.log(range/(200 * Math.pow(10, 5) * 2) - 5);
+      //console.log(range/(200 * Math.pow(10, 5) * 2) - 5);
       return Math.floor(range/(200 * Math.pow(10, 5) * 2) + 5);
     }else{
       return Math.ceil(range/this.zoom_split)

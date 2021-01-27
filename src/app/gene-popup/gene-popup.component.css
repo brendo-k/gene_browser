@@ -1,0 +1,36 @@
+.gene_description {
+  position: absolute;
+  display: inline-block;
+  border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+  background-color: black;
+  color: #fff;
+  top: 0;
+  left: 0;
+}
+
+.arrow{
+content: " ";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: black;
+  top: -3px;
+  margin-left: -5px;
+  transform: rotate(45deg);
+}
+
+.gene_description .gene_text {
+  position: absolute;
+  visibility: visible;
+  width: 200px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 5;
+}
+
+

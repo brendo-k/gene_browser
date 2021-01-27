@@ -20,8 +20,7 @@ speed-measure-plugin*.json
 .classpath
 .c9/
 *.launch
-.settings/
-*.sublime-workspace
+.settings/ *.sublime-workspace
 
 # IDE - VSCode
 .vscode/*
@@ -46,3 +45,4 @@ testem.log
 Thumbs.db
 
 /data/raw_data
+/data

@@ -1,4 +1,6 @@
-<canvas #canvas [style.height.px]="height" [style.width.px]="width" appScrolling [width]="width">
+<canvas #canvas [style.height.px]="height" [style.width.px]="width" 
+	[appScrolling]="width" class="position-relative">
+	<!--[appSetSize]="width" -->
 </canvas>
-<app-gene-popup [gene]="selected_gene" ></app-gene-popup>
+<app-gene-popup [gene]="selected_gene" [width]="width"></app-gene-popup>
 

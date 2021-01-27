@@ -14,6 +14,9 @@ import { RulerComponent } from './ruler/ruler.component';
 import { GeneComponent } from './gene/gene.component';
 import { ScrollingDirective } from './scrolling.directive';
 import { GenePopupComponent } from './gene-popup/gene-popup.component';
+import { ArrowsComponent } from './arrows/arrows.component';
+import { SetSizeDirective } from './set-size.directive';
+import { DnaRulerComponent } from './dna-ruler/dna-ruler.component';
 
 
 @NgModule({
@@ -26,6 +29,9 @@ import { GenePopupComponent } from './gene-popup/gene-popup.component';
     GeneComponent,
     ScrollingDirective,
     GenePopupComponent,
+    ArrowsComponent,
+    SetSizeDirective,
+    DnaRulerComponent,
   ],
   imports: [
     BrowserModule,
