@@ -45,4 +45,4 @@ testem.log
 Thumbs.db
 
 /data/raw_data
-/data
+/data/db
