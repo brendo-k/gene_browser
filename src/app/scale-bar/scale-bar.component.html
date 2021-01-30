@@ -1,5 +1,4 @@
 <div class="chromosome-container py-5" (mousedown)="mouse_down($event)">
-  <app-arrows></app-arrows>
   <div [ngStyle]="{'width.px': width, 'left.px': left}" class="bounding-box"></div>
 	
 	<div class="mr-2 inline" (click)="move_browser(-1)">
@@ -10,8 +9,11 @@
 	<i class="fas fa-angle-left fa-2x"></i>
 	</div>
 
-  <img class="chromosome" src="../../assets/chromosome1.png" #chromosome
+	<div class="chromosome-img" #chromosome_img>
+  <img class="chromosome" [style.top.px]="chromosome_top" src="./../../assets/chromosomes.png" #chromosome
                             (load)="onLoad()" draggable="false">
+	</div>
+
 	<div class="ml-2 inline" (click)="move_browser(0.5)">
 		<i class="fas fa-angle-right fa-2x"></i>
 	</div>

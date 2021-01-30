@@ -31,7 +31,7 @@ export class GenomeService {
   }
 
   get_dna(start: number, end: number, chromosome: string): Observable<Object>{
-    return this.http.get('api/gene', {
+    return this.http.get('api/dna', {
       params:{
         start: start.toString(),
         end: end.toString(), 

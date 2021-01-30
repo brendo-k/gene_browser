@@ -28,6 +28,7 @@ export class GeneComponent implements OnInit {
 
   gene_spacing = 45;
   gene_height = 20;
+  top_offset = 13;
 
 
   @ViewChild('canvas') canvas_element: ElementRef;
@@ -211,7 +212,8 @@ export class GeneComponent implements OnInit {
     for (let i = 0; i < this.genes.length; i++){
       let cur_gene = this.genes[i]
       //temp height and start of bb
-      let top_px = this.gene_spacing;
+      let top = this.top_offset;
+      let spacing = this.gene_spacing;
       let height = this.gene_height;
       
       //get start and width of gene in px
@@ -240,14 +242,14 @@ export class GeneComponent implements OnInit {
       }
 
       //final top position
-      top_px += top_px * pos_counter;
+      top += spacing * pos_counter;
 
       //save bounding box of gene
       cur_gene.bb = {
-        left: start_px,
-        right: start_px + width_gene, 
-        top: top_px, 
-        bottom: top_px + height, 
+        left: Math.floor(start_px),
+        right: Math.floor(start_px) + Math.ceil(width_gene),
+        top: top, 
+        bottom: top + height, 
       } as Bb 
     }
 
@@ -303,11 +305,11 @@ export class GeneComponent implements OnInit {
       let start = this.get_gene_start_px(gene);
       let width = this.get_gene_width(gene);
       height = Math.max(pos[1], height);
-      let top = (pos[0]) * gene_spacing;
-      let bottom = (pos[1]) * gene_spacing + this.gene_height;
+      let top = this.top_offset + (pos[0]-1) * gene_spacing;
+      let bottom = this.top_offset + (pos[1]-1) * gene_spacing + this.gene_height;
       gene.bb = {
-        left: start,
-        right: start + width,
+        left: Math.floor(start),
+        right: Math.floor(start) + Math.ceil(width),
         top: top,
         bottom: bottom,
       } as Bb;
@@ -327,6 +329,7 @@ export class GeneComponent implements OnInit {
 
   draw_exons(): void{
     let spacing = this.gene_spacing;
+    console.log(this.genes);
     this.genes.forEach((gene: Gene) =>{
 
       let transcripts = gene.mRNA.length;

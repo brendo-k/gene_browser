@@ -62,15 +62,23 @@ try{
     });
 
     app.get('/api/dna', (req, res) => {
-      let start = req.query.start;
-      let end = req.query.end;
+      let start = parseInt(req.query.start);
+      let end = parseInt(req.query.end);
       let chromosome = req.query.chromosome;
-      if (mRNA == null){
-        throw new Error(`Query parameters broken from exon: ${mRNA}`);
+      if (start == null){
+        throw new Error(`Query parameters broken dna: ${start}`);
+      }
+      if (end == null){
+        throw new Error(`Query parameters broken dna: ${end}`);
+      }
+      if (chromosome == null){
+        throw new Error(`Query parameters broken dna: ${chromosome}`);
       }
 
       //mongoDB query on gene collection 
-      let cursor = dna_collection.find({lower_bound: {$lt: end}, upper_bound: {$gt: start}, chromosome: chromosome});
+      let query = {start: {$lt: end}, end: {$gt: start}, chromosome: chromosome}
+      console.log(query);
+      let cursor = dna_collection.find(query);
       //convert cursor to array and send as http response
       cursor.toArray().then((value) => res.send(value));
     });

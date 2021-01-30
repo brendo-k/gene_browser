@@ -19,6 +19,7 @@ export class BrowserComponent implements OnInit  {
   child_genes: Gene[];
   coord: Coord;
   child_coords: Coord;
+  dna: string[];
 
   width: number;
   child_width: number;
@@ -28,7 +29,7 @@ export class BrowserComponent implements OnInit  {
   show_exons: boolean;
 
   scrollbar_width = 15;
-  height = 500;
+  height = 520;
 
   @HostListener('window:resize', ['$event'])
   onResize(event) {
@@ -41,7 +42,6 @@ export class BrowserComponent implements OnInit  {
 
   ngOnInit(): void {
     this.width = window.innerWidth*3/4;
-    this.child_width = this.width - this.scrollbar_width;
 
     //toggle gene labels
     this.is_labeled = this.set_label(this.browserState.get_zoom());
@@ -51,12 +51,20 @@ export class BrowserComponent implements OnInit  {
     this.browserState.coord$.subscribe((coord) => {
       this.coord = coord;
       this.get_genes(coord.start, coord.end);
-      if(this.browserState.get_zoom() == 1){
-        this.genomeService.get_dna(coord.start, coord.end, "1")
-          .subscribe((dna: object[]) =>{
-            console.log(coord.start, coord.end);
-            console.log(dna);
+      if(this.browserState.get_zoom() == 0){
+        this.genomeService.get_dna(coord.start, coord.end, this.browserState.get_chromosome())
+          .subscribe((dna: any[]) =>{
+            if(dna.length > 1){
+            }else{
+              let offset_start = this.coord.start - dna[0].start;
+              let range = this.coord.end - this.coord.start + 1;
+              console.log(range);
+              this.dna = dna[0].dna.substring(offset_start, offset_start + range)
+              console.log(this.dna);
+            }
           });
+      }else{
+        this.dna = null;
       }
     })
 
@@ -73,10 +81,7 @@ export class BrowserComponent implements OnInit  {
 
   //create an observable for querying genes from server
   get_genes(start: number, end: number): void{
-    this.genomeService.get_genes(start, end, "1")
-     // .pipe(
-     //   catchError( () => of(this.genomeService.get_temp_genes()))
-     // )
+    this.genomeService.get_genes(start, end, this.browserState.get_chromosome())
       .pipe(
           map((gene: any[]) => {
             gene.map((val) => val.bb = null);
@@ -87,7 +92,6 @@ export class BrowserComponent implements OnInit  {
         (genes) => {
           //set genes on callback
           this.genes = genes;
-          console.log(genes)
           if(this.show_exons){
             console.log('browser show exons');
             this.get_exons();
@@ -99,8 +103,10 @@ export class BrowserComponent implements OnInit  {
   }
 
   pass_to_child():void{
+    console.log('pass_to_child');
     this.child_genes = this.genes;
     this.child_coords = this.coord;
+    this.child_width = this.width - this.scrollbar_width;
   }
 
 
@@ -116,6 +122,7 @@ export class BrowserComponent implements OnInit  {
     let i = 0; let j = 0;
     this.genes.forEach((gene: Gene) => {
       i += 1;
+      //TODO: make faster by indexing on chromosome;
       this.genomeService.get_mRNA(gene._id).subscribe((mrnas: Mrna[]) => {
         i -= 1;
         gene.mRNA = mrnas;
@@ -124,9 +131,7 @@ export class BrowserComponent implements OnInit  {
           this.genomeService.get_exon(mrna._id).subscribe((exon: Exon[]) => {
             mrna.exon = exon;
             j -= 1
-            console.log(i,j);
             if(i == 0 && j == 0){
-              console.log('reached');
               this.pass_to_child();
             }
           });

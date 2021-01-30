@@ -7,11 +7,31 @@
   height: 40px;
   border-radius: 10px;
   pointer-events: none;
+  z-index: 1;
 
+}
+
+.chromosome-img{
+  display: flex;
+  justify-content: center;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+  
+  width: 664px;
+  height: 17px;
+  overflow: hidden;
+  position: relative;
 }
 
 .chromosome {
   display: block;
+  margin: auto;
+  width: 692px;
+  top:-23px;
+  position: relative;
   -webkit-user-select: none;
   -khtml-user-select: none;
   -moz-user-select: none;

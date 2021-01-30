@@ -7,9 +7,10 @@
   <div class="collape navbar-collapse d-flex justify-content-around" id="navbarNavDropdown">
 
     <form class="form-inline">
-      <label class="form-control-label white mr-sm-2">Zoom:</label>
-      <input class="form-control" type="number" placeholder="1" aria-label="1"
-                                              max="100" min="0">
+      <label class="form-control-label white mr-sm-2">Chromosome:</label>
+      <select [(ngModel)]="chromosome" (change)="changeChromosome()" class="form-control" name="chromosome">
+        <option *ngFor="let c of all_chromosomes">{{c}}</option>
+      </select>
     </form>
 
     <div class="d-flex slider">

@@ -27,7 +27,7 @@ export class GenePopupComponent implements OnInit {
       let width = this.gene.bb.right - this.gene.bb.left;
       this.left = Math.max(this.gene.bb.left + width/2 - 100, 0);
       this.left = Math.min(this.left, this.width - 200);
-      this.top = this.gene.bb.bottom + 30;
+      this.top = this.gene.bb.bottom + 60;
       this.arrow_left = this.gene.bb.left - this.left + width/2;
     }else{
       this.left = 0;

@@ -1,6 +1,8 @@
 import { Subject } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { Coord } from './coord';
+import { DnaLengths } from './dna-lengths.enum';
+
 
 @Injectable({
   providedIn: 'root'
@@ -11,6 +13,9 @@ export class BrowserStateService {
   zoom$: Subject<number>;
   coord: Coord;
   coord$: Subject<Coord>;
+  chromosome: string;
+  chromosome$: Subject<string>;
+
   genome_size: number;
   zoom_split: number;
 
@@ -18,6 +23,7 @@ export class BrowserStateService {
 
     this.zoom$ = new Subject<number>();
     this.coord$ = new Subject<Coord>();
+    this.chromosome$ = new Subject<string>();
 
     //called when zoom is changed
     this.zoom$.subscribe((value) => {
@@ -28,16 +34,22 @@ export class BrowserStateService {
     this.coord$.subscribe((value) => {
       this.coord = value;
     })
+    this.chromosome$.subscribe((value) => {
+      this.chromosome = value;
+      let name = "chromosome" + value;
+      this.genome_size = DnaLengths[name];
+    });
+
     this.coord = {
       start: 1,
       end: 228798,
     }
     this.set_zoom(3, false);
+    this.chromosome = "1";
 
     //TODO: Load the genome size from server depending on chromosome
     this.genome_size = 156040895;
     this.zoom_split = this.genome_size/10;
-
   }
 
   set_coord(start: number, end: number, from_zoom: boolean){
@@ -61,7 +73,7 @@ export class BrowserStateService {
 
   get_coord(){
     return this.coord;
-  }
+ }
 
   change_zoom(change:number){
     //change zoom from buttons
@@ -84,7 +96,9 @@ export class BrowserStateService {
 
     //number of bp shown in new zoom range
     let zoom_bp;
-    if(this.zoom <= 5){
+    if(this.zoom == 0){
+      zoom_bp = 50
+    }else if(this.zoom <= 5){
       //first 5 increase exponentially
       zoom_bp = 200 * Math.pow(10, this.zoom);
     } else if(this.zoom <= 7){
@@ -96,7 +110,7 @@ export class BrowserStateService {
     }
     //get the difference between cur start and end bp coordinates
     let {start, end} = this.coord 
-    let bp_diff = end - start;
+    let bp_diff = end - start + 1;
 
     //number of bp to add or remove to get to zoom level
     let bp_change = zoom_bp - bp_diff;
@@ -123,15 +137,28 @@ export class BrowserStateService {
 
   get_zoom_from_range(range: number){
 
-    if (range <= 200){
+    if (range <= 50){
       return 0;
     } else if (Math.log10(range/200) <= 5) {
-      return Math.floor(Math.log10(range/200));
+      if(0==Math.floor(Math.log10(range/200))){
+        return 1;
+      }else{
+        return Math.floor(Math.log10(range/200))
+      }
     } else if (range/(200 * Math.pow(10, 5) * 2) - 5 <= 7){
       //console.log(range/(200 * Math.pow(10, 5) * 2) - 5);
       return Math.floor(range/(200 * Math.pow(10, 5) * 2) + 5);
     }else{
       return Math.ceil(range/this.zoom_split)
     }
+  }
+
+  get_chromosome(){
+    return this.chromosome;
+  }
+
+  set_chromosome(chromosome: string){
+    this.chromosome$.next(chromosome);
+    this.set_coord(this.coord.start, this.coord.end, false);
   }
 }

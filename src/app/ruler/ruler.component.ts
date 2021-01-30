@@ -12,6 +12,24 @@ export class RulerComponent implements OnInit {
   cvs: HTMLCanvasElement;
   height: number;
 
+  is_down: boolean;
+  mouse_pos: number;
+  start: number;
+  left: number;
+  
+  @HostListener('mousedown', ['$event'])
+  onDown(event: MouseEvent){
+    this.is_down = true;
+    this.start = event.x;
+  }
+  
+  @HostListener('mousemove', ['$event'])
+  onMove(event: MouseEvent){
+    if(this.is_down){
+      //console.log('mouse_move');
+    }
+  }
+
   @Input() 'width': number;
   @Input() 'coord': Coord;
 
@@ -21,11 +39,13 @@ export class RulerComponent implements OnInit {
 
   ngOnInit(): void {
     this.height = 20;
+    this.is_down = false;
   }
 
   ngOnChanges(): void{
     if (typeof this.cvs != 'undefined') {
-      //console.log(this.coord);
+      let rect = this.cvs.getBoundingClientRect();
+      console.log(rect);
       this.set_size();
       this.draw_scale();
     }
@@ -35,8 +55,8 @@ export class RulerComponent implements OnInit {
     this.cvs = this.canvas_element.nativeElement as HTMLCanvasElement;
     this.ctx = this.cvs.getContext('2d');
     this.set_size();
-
-    this.draw_scale();
+    let rect = this.cvs.getBoundingClientRect();
+    console.log(rect);
   }
 
   set_size(): void {
@@ -47,6 +67,7 @@ export class RulerComponent implements OnInit {
   }
 
   draw_scale(): void{
+    console.log('draw_scale');
     let width = this.width;
     let height = this.height;
 
@@ -67,10 +88,11 @@ export class RulerComponent implements OnInit {
     let bp_change = Math.floor(range/ticks);
 
     for (let i = 0; i < ticks; i++){
+      let pos = Math.floor(offset * i)
       let bp = start + bp_change * i;
       this.ctx.beginPath;
-      this.ctx.moveTo(offset * i + 1, 15);
-      this.ctx.lineTo(offset * i + 1, 5);
+      this.ctx.moveTo(pos + 1, 15);
+      this.ctx.lineTo(pos + 1, 5);
       this.ctx.stroke();
       this.ctx.fillText(`${bp}`, offset * i + 2, 13);
     }

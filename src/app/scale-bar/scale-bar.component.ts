@@ -18,8 +18,11 @@ export class ScaleBarComponent implements OnInit {
   left: number;
   is_left: boolean;
   is_mouse_down: boolean;
+  chromosome_num: string;
+  
+  chromosome_top: number;
 
-  @ViewChild('chromosome') chromosome: ElementRef;
+  @ViewChild('chromosome_img') chromosome_container: ElementRef;
 
   @HostListener('window:resize')
   onResize(event) {
@@ -85,20 +88,26 @@ export class ScaleBarComponent implements OnInit {
 
   constructor(private browserState: BrowserStateService) { 
     //set starting values
-    this.width = 20;
     this.is_mouse_down = false;
     this.is_left = false;
+    this.width = 0;
 
-    
     //create listeners
   }
 
 
   ngOnInit(): void {
 
-    this.start = this.browserState.coord.start;
-    this.end = this.browserState.coord.end;
+    let coord = this.browserState.get_coord();
+    this.start = coord.start;
+    this.end = coord.end;
+    this.chromosome_num = this.browserState.get_chromosome();
+    this.set_top();
 
+    this.browserState.chromosome$.subscribe((chrom: string) => {
+      this.chromosome_num = chrom;
+      this.set_top();
+    });
     this.browserState.coord$.subscribe((value) =>{
       this.start = this.browserState.coord.start;
       this.end = this.browserState.coord.end;
@@ -106,22 +115,40 @@ export class ScaleBarComponent implements OnInit {
     });
   }
 
+  set_top(): void {
+    try{
+      let num = parseInt(this.chromosome_num);
+      this.chromosome_top = -23 - (num-1)*27; 
+    }catch{
+      if(this.chromosome_num == "X"){
+        this.chromosome_top = -23 - 23*27
+
+      }else if(this.chromosome_num == "Y"){
+        this.chromosome_top = -23 - 24*27
+
+      }
+    }
+
+  }
+
   //callback when image loads
   onLoad(): void {
-    let image_html = (this.chromosome.nativeElement as HTMLImageElement)
     //prevent dragging of ghost imgages
-    image_html.ondragstart = () => false;
-    this.img_width = image_html.width;
+    let img_container = (this.chromosome_container.nativeElement as HTMLElement)
+    let rect = img_container.getBoundingClientRect();
+
+    this.img_width = img_container.offsetWidth;
+    console.log(this.img_width);
     this.update_bounding_box();
-    this.padding_left = image_html.offsetLeft;
+    this.padding_left = rect.left;
   }
 
   update_bounding_box(): void {
     //console.log(`updating bounding box`);
-    let image_html = (this.chromosome.nativeElement as HTMLImageElement)
-    console.log(this.start, this.end);
+    let img_container = (this.chromosome_container.nativeElement as HTMLElement)
+    let rect = img_container.getBoundingClientRect();
 
-    this.padding_left = image_html.offsetLeft;
+    this.padding_left = rect.left;
     let range = this.end - this.start + 1;
     let bp_to_px = this.img_width/this.browserState.genome_size;
     this.width = range * bp_to_px;

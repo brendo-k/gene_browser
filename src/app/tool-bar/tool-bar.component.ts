@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Coord } from '../coord';
 import { BrowserStateService } from './../browser-state.service';
+import { Subscription } from 'rxjs';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-tool-bar',
@@ -10,11 +12,18 @@ import { BrowserStateService } from './../browser-state.service';
 export class ToolBarComponent implements OnInit {
 
   zoom: number;
-  _zoom: any;
+  _zoom: Subscription;
   coord: Coord;
   start: number;
   end: number;
-  _coord: any;
+  _coord: Subscription;
+  chromosome: string;
+  _chromosome: Subscription;
+
+
+  all_chromosomes: string[] = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+                              "11", "12", "13", "14", "15", "16", "17", "18" , "19", "20",
+                              "21", "22", "23", "X", "Y"]
 
   constructor(private browserState: BrowserStateService) { 
     this.zoom = browserState.zoom;
@@ -22,15 +31,10 @@ export class ToolBarComponent implements OnInit {
     this.start = this.coord.start;
     this.end = this.coord.end;
 
-
     this._zoom = browserState.zoom$.subscribe((value) => {
-      //console.log(`recieved zoom ${value}`);
       this.zoom = value;
-      this.start = this.coord.start;
-      this.end = this.coord.end;
     });
     this._coord = browserState.coord$.subscribe((value) => {
-      //console.log(`recieved coord ${value}`);
       this.coord = value;
       this.start = this.coord.start;
       this.end = this.coord.end;
@@ -38,6 +42,7 @@ export class ToolBarComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.chromosome = "1";
   }
 
   changeZoom(change:number = 0): void {
@@ -58,6 +63,10 @@ export class ToolBarComponent implements OnInit {
       end: this.end,
     }
     this.browserState.set_coord(this.start, this.end, false);
+  }
+
+  changeChromosome(): void{
+    this.browserState.set_chromosome(this.chromosome);
   }
 
 }
