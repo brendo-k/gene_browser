@@ -1,3 +1,9 @@
-<canvas #canvas [style.height.px]="height" [style.width.px]="width">
+<canvas class="position-relative" #canvas [style.height.px]="height" 
+				[style.width.px]="total_width" [style.left.px]="left"
+				appScrollAnimation [left_offset]="width" [move_amount]="scroll_amount"
+				(animation_done)="animation_done($event)">
 </canvas>
+<div class="position-absolute select_bb" [style.left.px]="select_left" 
+	[style.right.px]="select_right">
+</div>
 

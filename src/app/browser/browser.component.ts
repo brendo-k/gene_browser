@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { BrowserStateService } from './../browser-state.service';
 import { GenomeService } from '../genome.service';
+import { AnimationService } from '../animation.service';
 import { catchError, map } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { Gene } from '../gene';
@@ -37,11 +38,13 @@ export class BrowserComponent implements OnInit  {
     this.child_width = this.width - this.scrollbar_width;
   }
 
-  constructor(private genomeService: GenomeService, private browserState: BrowserStateService) { 
+  constructor(private genomeService: GenomeService, private browserState: BrowserStateService,
+              private animation: AnimationService) { 
   }
 
   ngOnInit(): void {
     this.width = window.innerWidth*3/4;
+    this.child_width = this.width - this.scrollbar_width;
 
     //toggle gene labels
     this.is_labeled = this.set_label(this.browserState.get_zoom());
@@ -52,21 +55,11 @@ export class BrowserComponent implements OnInit  {
       this.coord = coord;
       this.get_genes(coord.start, coord.end);
       if(this.browserState.get_zoom() == 0){
-        this.genomeService.get_dna(coord.start, coord.end, this.browserState.get_chromosome())
-          .subscribe((dna: any[]) =>{
-            if(dna.length > 1){
-            }else{
-              let offset_start = this.coord.start - dna[0].start;
-              let range = this.coord.end - this.coord.start + 1;
-              console.log(range);
-              this.dna = dna[0].dna.substring(offset_start, offset_start + range)
-              console.log(this.dna);
-            }
-          });
+        this.get_dna(coord);
       }else{
         this.dna = null;
       }
-    })
+    });
 
     //toggle lables on zoom change
     this.browserState.zoom$.subscribe((zoom: number) => {
@@ -75,6 +68,9 @@ export class BrowserComponent implements OnInit  {
     });
     
     this.coord = this.browserState.get_coord();
+    if(this.browserState.get_zoom() == 0){
+      this.get_dna(this.coord);
+    }
     //set genes now
     this.get_genes(this.coord.start, this.coord.end);
   }
@@ -93,20 +89,18 @@ export class BrowserComponent implements OnInit  {
           //set genes on callback
           this.genes = genes;
           if(this.show_exons){
-            console.log('browser show exons');
             this.get_exons();
           }else{
-            console.log('pass to child');
             this.pass_to_child();
           }
         });
   }
 
   pass_to_child():void{
-    console.log('pass_to_child');
     this.child_genes = this.genes;
     this.child_coords = this.coord;
     this.child_width = this.width - this.scrollbar_width;
+    this.animation.set_width(this.child_width);
   }
 
 
@@ -123,12 +117,12 @@ export class BrowserComponent implements OnInit  {
     this.genes.forEach((gene: Gene) => {
       i += 1;
       //TODO: make faster by indexing on chromosome;
-      this.genomeService.get_mRNA(gene._id).subscribe((mrnas: Mrna[]) => {
+      this.genomeService.get_mRNA(gene._id, gene.chromosome_num).subscribe((mrnas: Mrna[]) => {
         i -= 1;
         gene.mRNA = mrnas;
         mrnas.forEach((mrna: Mrna) =>{
           j += 1;
-          this.genomeService.get_exon(mrna._id).subscribe((exon: Exon[]) => {
+          this.genomeService.get_exon(mrna._id, gene.chromosome_num).subscribe((exon: Exon[]) => {
             mrna.exon = exon;
             j -= 1
             if(i == 0 && j == 0){
@@ -159,5 +153,31 @@ export class BrowserComponent implements OnInit  {
     }else {
       return false
     }
+  }
+
+  get_dna(coord: Coord): void {
+    let range = this.coord.end - this.coord.start;
+    let px_to_bp = range/this.width;
+    let offset = Math.ceil(this.width*px_to_bp); 
+
+    this.genomeService.get_dna(coord.start - offset, coord.end + offset, this.browserState.get_chromosome())
+    .subscribe((dna: any[]) =>{
+      console.log(dna);
+      if(dna.length > 1){
+        let range = this.coord.end - this.coord.start + 1;
+        let px_bp = range/this.width;
+        let offset_bp = Math.floor(this.width * px_bp);
+        let offset_start = this.coord.start - dna[0].start - offset_bp;
+        let next_range = dna[0].dna.length - offset_start + 1;
+        this.dna = dna[0].dna.substring(offset_start, offset_start + next_range);
+        this.dna += dna[1].dna.substring(0, range*3 - next_range + 1);
+      }else{
+        let range = this.coord.end - this.coord.start + 1;
+        let px_bp = range/this.width;
+        let offset_bp = Math.floor(this.width * px_bp);
+        let offset_start = this.coord.start - dna[0].start - offset_bp;
+        this.dna = dna[0].dna.substring(offset_start, offset_start + range*3)
+      }
+    });
   }
 }

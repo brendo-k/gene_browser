@@ -1,1 +1,9 @@
 canvas {cursor: col-resize;}
+
+.select_bb {
+  top: 0;
+  bottom: 0;
+  background-color: grey;
+  opacity: 0.5;
+  pointer-events: none;
+}

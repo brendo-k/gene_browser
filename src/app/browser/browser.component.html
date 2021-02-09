@@ -4,8 +4,10 @@
       overflow black-border" #content_container>
 			<app-ruler [width]="child_width" [coord]="child_coords">
 			</app-ruler>
-			<app-dna-ruler [width]="child_width" [dna]="dna">
+
+			<app-dna-ruler *ngIf="dna" [width]="child_width" [dna]="dna">
 			</app-dna-ruler>
+
 			<app-gene [width]="child_width" [coord]="child_coords" [genes]="child_genes" [is_labeled]="is_labeled"
 								(show_exons)="toggle_show($event)" (new_coords)="set_coord($event)"
                  [container_height]="height">

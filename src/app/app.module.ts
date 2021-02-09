@@ -15,6 +15,8 @@ import { GeneComponent } from './gene/gene.component';
 import { ScrollingDirective } from './scrolling.directive';
 import { GenePopupComponent } from './gene-popup/gene-popup.component';
 import { DnaRulerComponent } from './dna-ruler/dna-ruler.component';
+import { ShowExonsDirective } from './show-exons.directive';
+import { ScrollAnimationDirective } from './scroll-animation.directive';
 
 
 @NgModule({
@@ -28,9 +30,12 @@ import { DnaRulerComponent } from './dna-ruler/dna-ruler.component';
     ScrollingDirective,
     GenePopupComponent,
     DnaRulerComponent,
+    ShowExonsDirective,
+    ScrollAnimationDirective,
   ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     AppRoutingModule,
     HttpClientModule,
     FormsModule,

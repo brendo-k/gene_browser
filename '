@@ -1,0 +1,58 @@
+import { Directive, ElementRef, Input } from '@angular/core';
+import { 
+  AnimationMetadata,
+  AnimationBuilder,
+  AnimationPlayer,
+  trigger, 
+  animate,
+  transition,
+  style } from '@angular/animations'
+
+@Directive({
+  selector: '[appScrollAnimation]'
+})
+export class ScrollAnimationDirective {
+
+  player: AnimationPlayer;
+  @Input()
+  set move_amount(amount: number){
+    console.log('scroll animation directive');
+    if(this.player){
+      this.player.destroy();
+    }
+
+    let metadata;
+    if(amount == 0){
+      metadata = this.not_move();
+    }else{
+      metadata = this.move(amount);
+    }
+    const factory = this.builder.build(metadata);
+    console.log(amount)
+    console.log(this.el.nativeElement);
+    this.player = factory.create(this.el.nativeElement);
+    this.player.play();
+  }
+
+  constructor(private el: ElementRef, private builder: AnimationBuilder) { }
+
+  move(amount: number): AnimationMetadata[]{
+    return [
+      style({
+        left: `${amount}px`
+      }),
+      animate('1s ease'),
+    ]
+  }
+
+  not_move(): AnimationMetadata[]{
+    return [
+      style({
+        left: `$0px`
+      }),
+      animate('1s ease'),
+    ];
+  }
+
+
+}

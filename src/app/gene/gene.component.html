@@ -1,5 +1,7 @@
-<canvas #canvas [style.height.px]="height" [style.width.px]="width" 
-	[appScrolling]="width" class="position-relative">
+<canvas #canvas [style.height.px]="height" [style.width.px]="total_width" [style.left.px]="left" 
+	[appScrolling]="width" [appShowExons]="show_aa" (clear_canvas)=clear_canvas($event) 
+	[genes]="genes" class="position-relative" appScrollAnimation [move_amount]="scroll_amount"
+	(animation_done)="done_animation($event)" [left_offset]="width">
 	<!--[appSetSize]="width" -->
 </canvas>
 <app-gene-popup [gene]="selected_gene" [width]="width"></app-gene-popup>

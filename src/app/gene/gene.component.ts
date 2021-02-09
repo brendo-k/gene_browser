@@ -9,6 +9,8 @@ import { GenomeService } from '../genome.service';
 import { Mrna } from '../mrna';
 import { Exon } from '../exon';
 import { DNA } from '../dna';
+import { AnimationService } from '../animation.service';
+import { LoggerService } from '../logger.service';
 
 @Component({
   selector: 'app-gene',
@@ -25,11 +27,14 @@ export class GeneComponent implements OnInit {
   mouse_down: boolean;
   selected_gene: Gene;
   is_moving: boolean;
+  show_aa: boolean;
+  total_width: number;
+  scroll_amount: number;
+  left: number;
 
   gene_spacing = 45;
   gene_height = 20;
   top_offset = 13;
-
 
   @ViewChild('canvas') canvas_element: ElementRef;
 
@@ -42,9 +47,9 @@ export class GeneComponent implements OnInit {
   @Output() show_exons = new EventEmitter<Gene>();
   @Output() new_coords = new EventEmitter<Coord>();
 
+  //set new browser coordinates based on how much mouse dragged
   @HostListener('mouseup', ['$event'])
-  onClick(event: MouseEvent){
-    
+  onUp(event: MouseEvent){
     if(this.selected_gene != null && !this.is_moving){
       this.show_exons.emit(this.selected_gene); 
       let new_coord = {
@@ -56,14 +61,15 @@ export class GeneComponent implements OnInit {
     this.mouse_down = true;
   }
 
+  //mouse is down flag
   @HostListener('mousedown', ['$event'])
   onDown(event: MouseEvent){
     this.is_moving = false;
   }
 
+  //animate motion of browser
   @HostListener('mousemove', ['$event'])
   onMove(event: MouseEvent){
-
     this.is_moving = true;
     let x = event.offsetX;
     let y = event.offsetY;
@@ -86,35 +92,93 @@ export class GeneComponent implements OnInit {
 
 
   constructor(private browser_state: BrowserStateService,
-              private genome_service: GenomeService) { 
+              private genome_service: GenomeService, 
+              private animation: AnimationService,
+              private logger: LoggerService) { 
+
     this.mouse_down = false;
+
+    let zoom = this.browser_state.get_zoom();
+    if(zoom == 0){
+      this.show_aa = true;
+    }else{
+      this.show_aa = false;
+    }
+
+    //update zoom levels to allow showing of aa;
+    this.browser_state.zoom$.subscribe((zoom) => {
+      if(zoom == 0){
+        this.show_aa = true;
+      }else{
+        this.show_aa = false;
+      }
+    });
+
+    //animate drag scrolling
+    this.animation.moving$.subscribe((scroll: number) => {
+      this.logger.debug("callback, animate drag scrolling", this, scroll);
+      this.animate_scroll(scroll);
+    });
+
+    //animate button motion scroll
+    this.animation.set_moving$.subscribe((amount: number) => {
+      this.logger.debug("callback recieved, move set amount", this, amount);
+      let move_px = this.width * amount;
+      this.scroll_amount = this.left - move_px;
+    });
   }
 
   ngOnInit(): void {
     this.genes = [];
+    this.left = 0;
     this.height = 460;
+    this.scroll_amount = this.width;
     this.cvs = null 
     this.ctx = null 
+    this.set_total_size();
+
+    let new_height = this.get_positions();
+    //set the new height of the canvas
+    this.set_height(new_height); 
   }
 
-  ngAfterViewInit(): void {
-    this.cvs = this.canvas_element.nativeElement as HTMLCanvasElement;
-    this.ctx = this.cvs.getContext('2d')
-    this.draw_browser(true)
-  }
-  
   ngOnChanges(): void {
     if(typeof this.canvas_element != 'undefined'){
       this.draw_browser();
     }
   }
 
-  draw_browser(init: boolean = false): void{
+  ngAfterViewInit(): void {
+    this.cvs = this.canvas_element.nativeElement as HTMLCanvasElement;
+    this.ctx = this.cvs.getContext('2d')
+    this.draw_browser()
+  }
+
+  draw_browser(){
+    this.set_total_size();
     this.set_size();
-    if(!init){
-      this.clear_canvas();
-    }
+    this.clear_canvas();
     this.draw_gene();
+  }
+
+  set_total_size(): void{
+    this.total_width = this.width * 3;
+    this.left = -this.width;
+    this.scroll_amount = this.left;
+  }
+
+  set_size(): void {
+    let scale = window.devicePixelRatio;
+    this.cvs.width = this.total_width * scale;
+    this.cvs.height = this.height * scale;
+    this.ctx.scale(scale, scale);
+  }
+
+  //clears the canvas
+  clear_canvas(clear:boolean = true): void{
+    if(clear){
+      this.ctx.clearRect(0, 0, this.total_width, this.height);
+    }
   }
 
   draw_gene(): void {
@@ -128,7 +192,6 @@ export class GeneComponent implements OnInit {
     this.set_height(new_height); 
     //draw the genes
     this.draw_all();
-
   }
 
   get_positions(): number{
@@ -162,15 +225,10 @@ export class GeneComponent implements OnInit {
     height = Math.max(460, height);
     this.height = height;
     let scale = window.devicePixelRatio;
-    this.cvs.height = this.height * scale;
-    this.ctx.scale(scale, scale);
-  }
-
-  set_size(): void {
-    let scale = window.devicePixelRatio;
-    this.cvs.width = this.width * scale;
-    this.cvs.height = this.height * scale;
-    this.ctx.scale(scale, scale);
+    if(this.cvs){
+      this.cvs.height = this.height * scale;
+      this.ctx.scale(scale, scale);
+    }
   }
 
   get_conversion(): number {
@@ -199,11 +257,6 @@ export class GeneComponent implements OnInit {
     this.ctx.quadraticCurveTo(x, y, x + radius, y);
     this.ctx.closePath();
     this.ctx.fill();
-  }
-
-  //clears the canvas
-  clear_canvas(): void{
-    this.ctx.clearRect(0, 0, this.width, this.height);
   }
 
   get_gene_position(): number{
@@ -318,18 +371,17 @@ export class GeneComponent implements OnInit {
   }
 
   get_gene_start_px(gene: DNA): number {
-    return Math.max((gene.start - this.coord.start)*this.get_conversion(), 0)
+    return (gene.start - this.coord.start)*this.get_conversion() + this.width;
   }
 
   get_gene_width(gene: DNA): number{
-    let start = Math.max(gene.start, this.coord.start)
-    let end = Math.min(gene.end, this.coord.end)
+    let start = gene.start // Math.max(gene.start, this.coord.start)
+    let end = gene.end //Math.min(gene.end, this.coord.end)
     return Math.max(1, (end-start)*this.get_conversion());
   }
 
   draw_exons(): void{
     let spacing = this.gene_spacing;
-    console.log(this.genes);
     this.genes.forEach((gene: Gene) =>{
 
       let transcripts = gene.mRNA.length;
@@ -340,8 +392,7 @@ export class GeneComponent implements OnInit {
         this.ctx.fillStyle = "#3399ff";
         let transcript_start = this.get_gene_start_px(gene.mRNA[i]);
         let transcript_width = this.get_gene_width(gene.mRNA[i]);
-        this.draw_rounded_rect(transcript_start, top+9, 
-                               transcript_width, 2, 0);
+        this.draw_rounded_rect(transcript_start, top+9, transcript_width, 2, 0);
 
         let prev = Number.MAX_VALUE;
         gene.mRNA[i].exon.forEach((exon: Exon) =>{
@@ -387,4 +438,13 @@ export class GeneComponent implements OnInit {
     }
     this.ctx.stroke();
   }
+
+  done_animation(done: boolean): void{
+    this.left = this.scroll_amount;
+  }
+
+  animate_scroll(amount: number): void{
+    this.left += amount;
+  }
+
 }

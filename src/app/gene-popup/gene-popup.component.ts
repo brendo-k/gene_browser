@@ -22,13 +22,16 @@ export class GenePopupComponent implements OnInit {
   }
 
   ngOnChanges(): void{
-    console.log(this.gene);
     if(this.gene){
-      let width = this.gene.bb.right - this.gene.bb.left;
-      this.left = Math.max(this.gene.bb.left + width/2 - 100, 0);
+      let vis_start = Math.max(this.width, this.gene.bb.left);
+      let vis_end = Math.min(2*this.width, this.gene.bb.right)
+      let width = vis_end - vis_start;
+      
+      this.left = Math.max(vis_start - this.width + width/2 - 100, 0);
       this.left = Math.min(this.left, this.width - 200);
+
       this.top = this.gene.bb.bottom + 60;
-      this.arrow_left = this.gene.bb.left - this.left + width/2;
+      this.arrow_left = vis_start - this.left - this.width + width/2;
     }else{
       this.left = 0;
       this.top = 0;

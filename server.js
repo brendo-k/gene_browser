@@ -38,12 +38,13 @@ try{
     //HTTP request for getting gene transcripts from gene id
     app.get('/api/mRNA', (req, res) => {
       let gene = req.query.gene;
+      let chromosome = req.query.chromosome;
       if (gene == null){
         throw new Error(`Query parameters broken from mRNA: ${gene}`);
       }
 
       //mongoDB query on gene collection 
-      let cursor = mRNA_collection.find({gene: gene});
+      let cursor = mRNA_collection.find({chromosome_num: chromosome, gene: gene});
       //convert cursor to array and send as http response
       cursor.toArray().then((value) => res.send(value));
     });
@@ -51,12 +52,13 @@ try{
     //HTTP request for getting gene transcripts from gene id
     app.get('/api/exon', (req, res) => {
       let mRNA = req.query.mRNA;
+      let chromosome = req.query.chromosome;
       if (mRNA == null){
         throw new Error(`Query parameters broken from exon: ${mRNA}`);
       }
 
       //mongoDB query on gene collection 
-      let cursor = exon_collection.find({mrna: mRNA});
+      let cursor = exon_collection.find({chromosome_num: chromosome, mrna: mRNA});
       //convert cursor to array and send as http response
       cursor.toArray().then((value) => res.send(value));
     });
@@ -77,7 +79,6 @@ try{
 
       //mongoDB query on gene collection 
       let query = {start: {$lt: end}, end: {$gt: start}, chromosome: chromosome}
-      console.log(query);
       let cursor = dna_collection.find(query);
       //convert cursor to array and send as http response
       cursor.toArray().then((value) => res.send(value));

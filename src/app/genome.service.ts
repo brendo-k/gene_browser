@@ -22,12 +22,12 @@ export class GenomeService {
   }
 
   //make http request to server for mRNA with a gene id 
-  get_mRNA(gene: string){
-    return this.http.get('api/mRNA', {params:{gene: gene}});
+  get_mRNA(gene: string, chromosome: string){
+    return this.http.get('api/mRNA', {params:{gene: gene, chromosome: chromosome}});
   }
 
-  get_exon(mRNA: string){
-    return this.http.get('api/exon', {params:{mRNA: mRNA}});
+  get_exon(mRNA: string, chromosome: string){
+    return this.http.get('api/exon', {params:{mRNA: mRNA, chromosome: chromosome}});
   }
 
   get_dna(start: number, end: number, chromosome: string): Observable<Object>{

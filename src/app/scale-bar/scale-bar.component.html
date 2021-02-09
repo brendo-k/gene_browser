@@ -1,5 +1,9 @@
 <div class="chromosome-container py-5" (mousedown)="mouse_down($event)">
-  <div [ngStyle]="{'width.px': width, 'left.px': left}" class="bounding-box"></div>
+	<div [style.left.px]="left" [style.width.px]="width" class="bounding-box"
+		#selection_box
+		appScrollAnimation (animation_done)="animation_done($event)"
+		[move_amount]="scroll_left" [left_offset]="padding_left">
+	</div>
 	
 	<div class="mr-2 inline" (click)="move_browser(-1)">
 		<i class="fas fa-angle-double-left fa-2x"></i>

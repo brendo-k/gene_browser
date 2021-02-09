@@ -27,7 +27,6 @@ export class BrowserStateService {
 
     //called when zoom is changed
     this.zoom$.subscribe((value) => {
-
       this.zoom = value;
     })
 
@@ -41,10 +40,10 @@ export class BrowserStateService {
     });
 
     this.coord = {
-      start: 1,
-      end: 228798,
+      start: 69068,
+      end: 69118,
     }
-    this.set_zoom(3, false);
+    this.set_zoom(0, false);
     this.chromosome = "1";
 
     //TODO: Load the genome size from server depending on chromosome
@@ -117,6 +116,15 @@ export class BrowserStateService {
     bp_change = Math.ceil(bp_change/2);
     start -= bp_change;
     end += bp_change;
+    if(start < 1){
+      end -= (start - 1)
+      start = 1
+    }
+    if(end > this.genome_size){
+      let diff = end - this.genome_size;
+      start -= diff
+      end = this.genome_size;
+    }
     
     if(this.zoom == 10){
       start = 1;
@@ -136,7 +144,6 @@ export class BrowserStateService {
   }
 
   get_zoom_from_range(range: number){
-
     if (range <= 50){
       return 0;
     } else if (Math.log10(range/200) <= 5) {
