@@ -28,11 +28,14 @@ try{
 
         throw new Error(`Query parameters broken: ${start} ${end} ${chromosome}`);
       }
+      let query = '{start: {$lt: end}, end: {$gt: start}, chromosome_num: chromosome}'
+      console.log(query);
 
       //mongoDB query on gene collection 
       let cursor = gene_collection.find({start: {$lt: end}, end: {$gt: start}, chromosome_num: chromosome});
       //convert cursor to array and send as http response
       cursor.toArray().then((value) => res.send(value));
+      
     });
 
     //HTTP request for getting gene transcripts from gene id

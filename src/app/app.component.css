@@ -1,0 +1,4 @@
+.animate {
+  transition: width 1s, transform 1s;
+  transition-timing-function: ease;
+}

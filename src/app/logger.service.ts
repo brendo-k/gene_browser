@@ -77,7 +77,7 @@ export class LoggerService {
   }
 
   private formatParams(params: any[]): string {
-    let ret: string = params.join(",");
+    let ret: string = params.join(", ");
     
     // Is there at least one object in the array?
     if (params.some(p => typeof p == "object")) {

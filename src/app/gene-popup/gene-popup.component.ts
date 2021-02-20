@@ -12,13 +12,13 @@ export class GenePopupComponent implements OnInit {
 
   @Input() gene: Gene;
   @Input() width: number;
+  @Input() top_offset: number;
   left: number;
   top: number;
   arrow_left: number;
   constructor() { }
 
   ngOnInit(): void {
-
   }
 
   ngOnChanges(): void{
@@ -30,7 +30,7 @@ export class GenePopupComponent implements OnInit {
       this.left = Math.max(vis_start - this.width + width/2 - 100, 0);
       this.left = Math.min(this.left, this.width - 200);
 
-      this.top = this.gene.bb.bottom + 60;
+      this.top = this.gene.bb.bottom + this.top_offset + 20;
       this.arrow_left = vis_start - this.left - this.width + width/2;
     }else{
       this.left = 0;

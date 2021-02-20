@@ -11,10 +11,6 @@
   transform: translateX(0);
 }
 
-.animate {
-  transition: width 1s, transform 1s;
-  transition-timing-function: ease;
-}
 
 .chromosome-img{
   display: flex;

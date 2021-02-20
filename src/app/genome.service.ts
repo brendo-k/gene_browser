@@ -16,6 +16,7 @@ export class GenomeService {
 
   //make http request to server to get genes in range
   get_genes(start: number, end: number, chromosome: string): Observable<Object>{
+    console.log('getting genes from service');
     return this.http.get('api/gene', {params:{start: start.toString(),
                                               end: end.toString(), 
                                               chromosome: chromosome.toString()}});
@@ -31,6 +32,7 @@ export class GenomeService {
   }
 
   get_dna(start: number, end: number, chromosome: string): Observable<Object>{
+    console.log('get dna');
     return this.http.get('api/dna', {
       params:{
         start: start.toString(),

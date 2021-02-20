@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, Input} from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, Input, Renderer2 } from '@angular/core';
 import { Output, HostListener, EventEmitter} from '@angular/core';
 import { Gene } from '../gene';
 import { Coord } from '../coord';
@@ -25,12 +25,12 @@ export class GeneComponent implements OnInit {
   ctx: CanvasRenderingContext2D;
   height: number;
   mouse_down: boolean;
-  selected_gene: Gene;
   is_moving: boolean;
   show_aa: boolean;
   total_width: number;
   scroll_amount: number;
   left: number;
+  selected_gene: Gene;
 
   gene_spacing = 45;
   gene_height = 20;
@@ -39,19 +39,32 @@ export class GeneComponent implements OnInit {
   @ViewChild('canvas') canvas_element: ElementRef;
 
   @Input() genes: Gene[]; 
-  @Input() width: number; 
+  private _width: number;
+  @Input()
+  get width(){
+    return this._width
+  }
+  set width(width: number){
+    this._width = width;
+    this.set_total_size();
+    if(this.cvs){
+      this.set_canvas_size();
+      this.logger.debug('browser resize recieved', this, this.width);
+      this.draw_gene();
+    }
+  }
   @Input() is_labeled: Boolean;
   @Input() coord: Coord;
   @Input() container_height: number;
 
-  @Output() show_exons = new EventEmitter<Gene>();
+  @Output() selected_gene_emit: EventEmitter<Gene>;
   @Output() new_coords = new EventEmitter<Coord>();
 
   //set new browser coordinates based on how much mouse dragged
   @HostListener('mouseup', ['$event'])
   onUp(event: MouseEvent){
     if(this.selected_gene != null && !this.is_moving){
-      this.show_exons.emit(this.selected_gene); 
+      this.selected_gene_emit.emit(this.selected_gene);
       let new_coord = {
         start: this.selected_gene.start, 
         end: this.selected_gene.end,
@@ -81,12 +94,16 @@ export class GeneComponent implements OnInit {
         && y >= gene.bb.top 
         && y <= gene.bb.bottom){
 
+          if(this.selected_gene != gene){
+            this.selected_gene_emit.emit(gene);
+          }
           this.selected_gene = gene;
           seen = true;
         }
     }); 
-    if(!seen){
+    if(!seen && this.selected_gene != null){
       this.selected_gene = null;
+      this.selected_gene_emit.emit(null);
     }
   }
 
@@ -94,9 +111,12 @@ export class GeneComponent implements OnInit {
   constructor(private browser_state: BrowserStateService,
               private genome_service: GenomeService, 
               private animation: AnimationService,
-              private logger: LoggerService) { 
+              private logger: LoggerService, 
+              private render: Renderer2) { 
 
     this.mouse_down = false;
+    this.selected_gene_emit = new EventEmitter<Gene>()
+    this.selected_gene = null;
 
     let zoom = this.browser_state.get_zoom();
     if(zoom == 0){
@@ -122,52 +142,68 @@ export class GeneComponent implements OnInit {
 
     //animate button motion scroll
     this.animation.set_moving$.subscribe((amount: number) => {
-      this.logger.debug("callback recieved, move set amount", this, amount);
+      this.logger.debug("animation start", this);
       let move_px = this.width * amount;
       this.scroll_amount = this.left - move_px;
+      let el = (this.canvas_element.nativeElement as HTMLElement)
+      this.render.addClass(this.canvas_element.nativeElement, 'animate');
+      el.style.transform = `translateX(${this.scroll_amount - this.left}px)`;
+
+      this.animation.is_animate();
+
+      el.addEventListener('transitionend', () => {
+        this.logger.debug('animation end', this);
+        let el = (this.canvas_element.nativeElement as HTMLElement)
+        this.left = this.scroll_amount;
+        el.style.transform = 'translateX(0px)';
+        this.render.removeClass(el, 'animate');
+        this.animation.is_done();
+      }, {once: true});
+
     });
   }
 
   ngOnInit(): void {
     this.genes = [];
-    this.left = 0;
+    this.left = -this.width;
     this.height = 460;
-    this.scroll_amount = this.width;
+    this.scroll_amount = null;
     this.cvs = null 
     this.ctx = null 
-    this.set_total_size();
 
     let new_height = this.get_positions();
     //set the new height of the canvas
     this.set_height(new_height); 
+    this.set_total_size();
   }
 
   ngOnChanges(): void {
     if(typeof this.canvas_element != 'undefined'){
-      this.draw_browser();
+      console.log(this.genes);
+      this.left = -this.width
+      this.scroll_amount = null;
+      this.clear_canvas
+      this.draw_gene();
     }
   }
 
   ngAfterViewInit(): void {
     this.cvs = this.canvas_element.nativeElement as HTMLCanvasElement;
     this.ctx = this.cvs.getContext('2d')
-    this.draw_browser()
-  }
-
-  draw_browser(){
-    this.set_total_size();
-    this.set_size();
+    this.set_canvas_size();
     this.clear_canvas();
     this.draw_gene();
   }
 
+
   set_total_size(): void{
     this.total_width = this.width * 3;
     this.left = -this.width;
-    this.scroll_amount = this.left;
+    this.scroll_amount = null;
+    this.logger.debug('set total size', this, this.total_width, this.left, this.scroll_amount);
   }
 
-  set_size(): void {
+  set_canvas_size(): void {
     let scale = window.devicePixelRatio;
     this.cvs.width = this.total_width * scale;
     this.cvs.height = this.height * scale;
@@ -382,6 +418,7 @@ export class GeneComponent implements OnInit {
 
   draw_exons(): void{
     let spacing = this.gene_spacing;
+    console.log(this.genes);
     this.genes.forEach((gene: Gene) =>{
 
       let transcripts = gene.mRNA.length;
@@ -437,10 +474,6 @@ export class GeneComponent implements OnInit {
       this.ctx.lineTo(right, bottom);
     }
     this.ctx.stroke();
-  }
-
-  done_animation(done: boolean): void{
-    this.left = this.scroll_amount;
   }
 
   animate_scroll(amount: number): void{

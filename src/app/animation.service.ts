@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs'
+import { LoggerService } from './logger.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,22 +15,20 @@ export class AnimationService {
   set_moving: number;
   animations: any[];
 
-  done: boolean;
+  done: boolean[];
   done$: Subject<boolean>;
 
 
-  constructor() { 
+  constructor(private logger: LoggerService) { 
     this.moving = 0;
     this.moving$ = new Subject<number>();
     this.moving$.subscribe((num: number) =>{
       this.moving = num;
     });
 
-    this.done = true;
+    this.done = [];
     this.done$ = new Subject<boolean>();
-    this.done$.subscribe((val: boolean) => {
-      this.done = val;
-    });
+    
     this.set_moving = 0;
     this.set_moving$ = new Subject<number>();
     this.set_moving$.subscribe((num: number) => {
@@ -43,10 +42,25 @@ export class AnimationService {
   }
 
   is_done(){
-    this.done$.next(true);
+    this.done.pop();
+    console.log(this.done);
+    if(this.done.length == 0){
+      this.logger.debug('animations done', this);
+      this.done$.next(true);
+    }
   }
+
+
   is_animate(){
-    this.done$.next(false);
+    this.done.push(true);
+  }
+
+  is_animating(){
+    if(this.done.length == 0){
+      return false;
+    }else{
+      return true;
+    }
   }
 
   start_moving_animation(trans_x: number): void {
@@ -65,18 +79,8 @@ export class AnimationService {
   }
 
   move_set_amount(amount: number){
+    this.logger.debug('move set amount', this, amount);
     this.set_moving$.next(amount);
   }
 
-  move_set_done(){
-    this.set_moving$.next(null);
-  }
-
-  add_animation(animation: any){
-    this.animations.push(animation);
-  }
-
-  get_is_animate(): boolean{
-    return this.done;
-  }
 }
